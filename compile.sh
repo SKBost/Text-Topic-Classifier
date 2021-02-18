@@ -1,0 +1,3 @@
+clear
+javac LinearClassifier.java
+javac LinearClassifierRunner.java

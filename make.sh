@@ -1,2 +1,2 @@
 ./compile.sh
-java LinearClassifier.java
+java LinearClassifierRunner.java

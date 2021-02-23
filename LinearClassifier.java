@@ -8,23 +8,99 @@ import java.util.stream.Stream;
 public class LinearClassifier {
 
     private final int numFeatures;
-    private final ArrayList<DataPoint> trPts; // training data points with feature vectors and labels
+    private ArrayList<DataPoint> trPts; // training data points with feature vectors and labels
+    private ArrayList<DataPoint> allTrPts;
+    private ArrayList<DataPoint> binaryTrPts;
 
     private static double placeholder = 420.69;
 
     public LinearClassifier(int newNumFeatures, String trainFile) {
-
         numFeatures = newNumFeatures;
-        print("todo: read in files");
-        print("todo: get actual number of points");
-        trPts = readDataFrom(trainFile);
+        allTrPts = readDataFrom(trainFile);
+        trPts = allTrPts;
 
-        print("todo: finish LinearClassifier constructor");
+        ArrayList<DataPoint> binaryPts = new ArrayList<DataPoint>();
+        for(int i = 0; i < allTrPts.size(); i++) {
+            DataPoint tp = allTrPts.get(i);
+            if(tp.getLabel() == 1 || tp.getLabel() == 2) {
+                double newLabel;
+                if(tp.getLabel() == 1) {
+                    newLabel = -1;
+                } else {
+                    newLabel = 1;
+                }
+                DataPoint binaryPt = new DataPoint(tp.getFeatures(), newLabel);
+                binaryPts.add(binaryPt);
+            }
+        }
+        binaryTrPts = binaryPts;
+    }
 
-        
+    /*
+    public void runMethodTests() {
+        //testMSAV(); // good
+        //testGDP(); // good
+        //testSV(); // good
 
     }
 
+    private void testMSAV() {
+        double scalar = 3.0;
+        double[] vector = new double[3];
+        vector[0] = 1;
+        vector[1] = 2;
+        vector[2] = 3;
+        double[] newVec = multiplyScalarAndVector(scalar, vector);
+        printDoubleArray(newVec);
+
+        // expect: [3, 6, 9]
+    }
+
+    private void testGDP() {
+        double[] vector1 = new double[3];
+        vector1[0] = 1;
+        vector1[1] = 2;
+        vector1[2] = 3;
+
+        double[] vector2 = new double[3];
+        vector2[0] = 4;
+        vector2[1] = 5;
+        vector2[2] = 6;
+
+        double dp = getDotProduct(vector1, vector2);
+        print("" + dp);
+
+        // expect: 32
+    }
+
+    private void testSV() {
+        double[] vector1 = new double[3];
+        vector1[0] = 1;
+        vector1[1] = 2;
+        vector1[2] = 3;
+
+        double[] vector2 = new double[3];
+        vector2[0] = 4;
+        vector2[1] = 5;
+        vector2[2] = 6;
+
+        double[] newVec = sumVectors(vector1, vector2);
+        printDoubleArray(newVec);
+
+        // expect: [5, 7, 9]
+
+    }
+    */
+
+    public void useClasses1And2() {
+        trPts = binaryTrPts;
+    }
+
+    public void useAllClasses() {
+        trPts = allTrPts;
+    }
+
+    // tested
     private static double[] multiplyScalarAndVector(double scalar, double[] vector) {
         //print("inside multiplyScalarAndVector");
         double[] newVec = new double[vector.length];
@@ -42,11 +118,14 @@ public class LinearClassifier {
         return newVec;
     }
 
+    //MEGA TODO!!!!! VITODO FIX THIS SO IT ALL WORKS ON OTHER VALUES INSTEAD OF EXPECTING -1 AND 1
     // runs a single pass of perceptron given a starting value
     public double[] teachPerceptron(double[] w0) { // note: we start at w0 instead of w1 for 0 indexing
-        print("inside teachPerceptron");
+        //print("inside teachPerceptron");
         double[][] w = new double[trPts.size() + 1][numFeatures]; // todo: do we actually use numPoints + 1?
         w[0] = w0;
+        //print("each w is size " + w[0].length);
+        //print("there are " + w.length + " ws");
 
         for(int t = 0; t < trPts.size(); t++) {
             double yt = trPts.get(t).getLabel();
@@ -54,16 +133,21 @@ public class LinearClassifier {
             double classVal = yt * getDotProduct(w[t], xt); // classification value
 
             if(classVal <= 0) {
-                //print("perceptron got it wrong on training point t = " + t + "; updating w[t+1]");
+                //print("perceptron got it wrong on training point t = " + t + ", where classVal is " 
+                    //+ classVal + "; updating w[t+1]");
                 w[t+1] = sumVectors(w[t], multiplyScalarAndVector(yt, xt));
             } else {
+                //print("perceptron got it right on training point t = " + t + ", where classVal is " 
+                    //+ classVal + "; not updating w[t+1]");
                 w[t+1] = w[t];
             }
         }
 
+        //print("trPts.size() is " + trPts.size());
         return w[trPts.size()]; // final form of w after running on last data point
     }
 
+    // tested
     private double[] sumVectors(double[] first, double[] second) {
         //print("inside sumVectors");
 
@@ -80,6 +164,7 @@ public class LinearClassifier {
         return newVec;
     }
 
+    // tested
     private double getDotProduct(double[] wt, double[] xt) {
         //print("inside getDotProduct");
         // check if inputs are valid
@@ -148,6 +233,8 @@ public class LinearClassifier {
 
         return error;
     }
+
+    
 
     // w is the classifier (todo: change name)
     // perceptron gives correct classification

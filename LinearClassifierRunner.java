@@ -9,11 +9,13 @@ public class LinearClassifierRunner {
 
     public static void main(String[] args) {
         int dimNum = 819;
-        int numPasses = 1;
+        int numPasses = 4;
         String trainFile = "pa3train.txt";
 
         LinearClassifier lc = new LinearClassifier(dimNum, trainFile);
+        lc.useClasses1And2();
         lc.runPerceptronPasses(numPasses);
+        //lc.runMethodTests();
 
         print("todo: finish LinearClassifierRunner main");
 

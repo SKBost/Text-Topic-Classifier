@@ -19,8 +19,8 @@ public class LinearClassifierRunner {
         // part 1
 
         lc.useClasses1And2();
-        print("Part 1:");
-        lc.runPerceptronPasses(numPasses);
+        //print("Part 1:");
+        //lc.runPerceptronPasses(numPasses);
 
 
         // part 2

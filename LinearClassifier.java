@@ -210,23 +210,43 @@ public class LinearClassifier {
             //print("inside runGradientDescent");
         double rate = 0.001; // learning rate/step size
         double stopThreshold = 0.001; // todo check if this is good for this program
-        double[][] w = new double[trPts.size() + 1][numFeatures]; // todo: do we actually use numPoints + 1?
+        double[][] w = new double[numIterations + 1][numFeatures]; // todo: do we actually use numPoints + 1?
         w[0] = new double[numFeatures];
         //print("each w is size " + w[0].length);
         //print("there are " + w.length + " ws");
-
+        print("before gradient descent, w0 is " + norm(w[0]));
         for(int t = 0; t < numIterations; t++) { // VITDO: CHECK IF THIS IS EVEN SUPPOSED TO RUN THIS MANY TIMES?
 
             double[] deltaLW = getDeltaLW(w[t]);
-            w[t+1] = subtractVectors(w[t], multiplyScalarAndVector(rate, deltaLW));
-            
+            if(deltaLW.equals(new double[w[t].length])) {
+                print("getDeltaLW did a bad job");
+            }
+            double[] update = multiplyScalarAndVector(rate, deltaLW);
+            if(update.equals(new double[w[t].length])) {
+                print("getDeltaLW did a bad job");
+            } else {
+                print("norm of update is " + norm(update));
+                //printDoubleArray(update);
+            }
+            w[t+1] = subtractVectors(w[t], update);
+            if(w[t+1].equals(new double[w[t].length])) {
+                print("subtractVectors did a bad job");
+            } else {
+                print("norm of w[" + (t+1) + "] is " + norm(w[t+1]));
+                //printDoubleArray(w[t+1]);
+            }
             if(norm(deltaLW) <= stopThreshold) {
+                print("we return early because norm(deltaLW) is " + norm(deltaLW));
                 return w[t + 1];
             } 
+            print("norm(deltaLW) is " + norm(deltaLW));
+
+            
         }
 
         //print("trPts.size() is " + trPts.size());
-        return w[trPts.size()]; // final form of w after running on last data point
+        print("we do not return early");
+        return w[numIterations]; // final form of w after running on last data point
     }
 
     // function that gives most of the update for w[t+1]
@@ -243,19 +263,44 @@ public class LinearClassifier {
 
             
             double[] vecNumer = multiplyScalarAndVector(-yi, xi); // vector numerator
-            double[] vecI = multiplyScalarAndVector(sigmoid(yi, xi, w), vecNumer);
+            double[] vecI = multiplyScalarAndVector(getScalarToMult(yi, xi, w), vecNumer);
             vecSum = sumVectors(vecSum, vecI);
         }
+
+        /*if(vecSum.equals(new double[w.length])) {
+            print("the problem is in deltaLW");
+        } else {
+            print("vecSum is: ");
+            printDoubleArray(vecSum);
+        }*/
 
         return vecSum;
     }
 
     // this sigmoid functuon gives P(y | x)
     private double sigmoid(double y, double[] x, double[] w) {
-            double exponent = y * getDotProduct(w, x);
-            double sigScal = 1/(1 + Math.exp(exponent)); // sigmoid scalar
-            return sigScal;
+        //print("in sigmoid function; y is " + y);
+        double dotProd = getDotProduct(w, x);
+        //print("dotProd is " + dotProd);
+        double exponent = -1 * y * dotProd;
+        //print("exponent is " + exponent);
+        double sigScal = 1/(1 + Math.exp(exponent)); // sigmoid scalar
+        //print("sigScal is " + sigScal);
+        return sigScal;
     }
+
+    // vitodo: check on negative sign in loss function vs fancy l
+    private double getScalarToMult(double y, double[] x, double[] w) {
+        //print("in sigmoid function; y is " + y);
+        double dotProd = getDotProduct(w, x);
+        //print("dotProd is " + dotProd);
+        double exponent = y * dotProd;
+        //print("exponent is " + exponent);
+        double sigScal = 1/(1 + Math.exp(exponent)); // sigmoid scalar
+        //print("sigScal is " + sigScal);
+        return sigScal;
+    }
+    
 
     // w is the classifier (todo: change name)
     // perceptron gives correct classification
@@ -265,7 +310,13 @@ public class LinearClassifier {
         // classification value: return true if chances are greater than half that the label is 
         // the correct label (yt) given xt according to the predictor w
         double classVal = sigmoid(yt, xt, w); 
-        return classVal > 0.5;
+        //print("classVal is " + classVal);
+
+        if(classVal == 0.5) { //TODO: find a better way of handling this
+            return yt == 1;
+        } else {
+            return classVal > 0.5;
+        }
     }
 
     public double getLogisticRegressionTrainingError(double[] classifier) {
@@ -273,6 +324,7 @@ public class LinearClassifier {
     }
 
     private double getLogisticRegressionError(double[] classifier, ArrayList<DataPoint> testData) {
+        print("final classifier's norm is " + norm(classifier));
         int timesCorrect = 0;
         int timesIncorrect = 0;
 

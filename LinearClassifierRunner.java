@@ -11,11 +11,20 @@ public class LinearClassifierRunner {
         int dimNum = 819;
         int numPasses = 4;
         String trainFile = "pa3train.txt";
+        String testFile = "pa3test.txt";
 
-        LinearClassifier lc = new LinearClassifier(dimNum, trainFile);
+        LinearClassifier lc = new LinearClassifier(dimNum, trainFile, testFile);
+
+        // part 1
+
         lc.useClasses1And2();
+        print("Part 1:");
         lc.runPerceptronPasses(numPasses);
         //lc.runMethodTests();
+
+        // part 2
+
+
 
         print("todo: finish LinearClassifierRunner main");
 

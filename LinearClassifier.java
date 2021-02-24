@@ -11,12 +11,14 @@ public class LinearClassifier {
     private ArrayList<DataPoint> trPts; // training data points with feature vectors and labels
     private ArrayList<DataPoint> allTrPts;
     private ArrayList<DataPoint> binaryTrPts;
+    private ArrayList<DataPoint> testPts;
 
     private static double placeholder = 420.69;
 
-    public LinearClassifier(int newNumFeatures, String trainFile) {
+    public LinearClassifier(int newNumFeatures, String trainFile, String testFile) {
         numFeatures = newNumFeatures;
         allTrPts = readDataFrom(trainFile);
+        testPts = readDataFrom("pa3test.txt");
         trPts = allTrPts;
 
         ArrayList<DataPoint> binaryPts = new ArrayList<DataPoint>();
@@ -198,6 +200,8 @@ public class LinearClassifier {
             double[] wT = teachPerceptron(w0); // the final value/output
             double error = getPerceptronTrainingError(wT);
             print("after run " + i + " of teaching perceptron, we get the following training error:" + error);
+            error = getPerceptronError(wT, testPts);
+            print("after run " + i + " of teaching perceptron, we get the following test error:" + error);
             //printDoubleArray(w0);
             w0 = wT; // the final value/output of each pass is the starter for the next pass
         }

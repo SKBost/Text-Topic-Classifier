@@ -12,6 +12,8 @@ public class LinearClassifier {
     private ArrayList<DataPoint> allTrPts;
     private ArrayList<DataPoint> binaryTrPts;
     private ArrayList<DataPoint> testPts;
+    private double[] pw3; // perceptron's weight vector after 3 iterations
+    private double[] lrw50; // logistic regression's weight vector after 50 iterations of gradient descent 
 
     private static double placeholder = 420.69;
 
@@ -36,6 +38,7 @@ public class LinearClassifier {
             }
         }
         binaryTrPts = binaryPts;
+        pw3 = null;
     }
 
     public void useClasses1And2() {
@@ -140,6 +143,11 @@ public class LinearClassifier {
                 print("after " + (i + 1) + " runs of teaching perceptron, we get the following training error: " 
                     + trError + " and the following test error: " + testError);
             }
+
+            if(i + 1 == 3) { // classifier after 3 passes
+                pw3 = wT;
+            }
+
             //printDoubleArray(w0);
             w0 = wT; // the final value/output of each pass is the starter for the next pass
         }
@@ -190,6 +198,63 @@ public class LinearClassifier {
     public double getPerceptronTrainingError(double[] classifier) {
         return getPerceptronError(classifier, trPts);
     }
+
+    public double[] getPW3() {
+        return pw3;
+    }
+
+    public double[] getLRW50() {
+        return lrw50;
+    }
+
+    public Pair<IdxValPair[], IdxValPair[]> getExtremeCoords(double[] vector, int numIdxs) {
+        IdxValPair[] highPairs = new IdxValPair[numIdxs];
+        IdxValPair[] lowPairs = new IdxValPair[numIdxs];
+        
+        IdxValPair[] vecPairs = new IdxValPair[vector.length];
+
+        for(int i = 0; i < vector.length; i++) {
+            IdxValPair pair = new IdxValPair(i, vector[i]);
+            vecPairs[i] = pair;
+        }
+
+        Arrays.sort(vecPairs);
+
+        //print("now printing vecPairs");
+        //for(int i = 0; i < vecPairs.length; i++) {
+        //    print("vecPairs[" + i + "] = (" + vecPairs[i].getIdx() + ", " + vecPairs[i].getVal() + ")");
+        //}
+
+        for(int i = 0; i < numIdxs; i++) {
+            lowPairs[i] = vecPairs[i];
+            highPairs[i] = vecPairs[vecPairs.length - 1 - i ];
+        }
+
+        print("now printing lowPairs");
+        for(int i = 0; i < lowPairs.length; i++) {
+            print("lowPairs[" + i + "] = (" + lowPairs[i].getIdx() + ", " + lowPairs[i].getVal() + ")");
+        }
+
+        print("now printing highPairs");
+        for(int i = 0; i < highPairs.length; i++) {
+            print("highPairs[" + i + "] = (" + highPairs[i].getIdx() + ", " + highPairs[i].getVal() + ")");
+        }
+
+        Pair<IdxValPair[], IdxValPair[]> lowNHigh = new Pair<IdxValPair[], IdxValPair[]>(lowPairs, highPairs);
+        
+
+
+
+        /*
+        for(int i = 0; i < sortedVec.length; i++) {
+            print("sortedVec[" + i + "] is " + sortedVec[i]);
+        }
+        */
+        
+        return lowNHigh;
+    }
+
+    // end of perceptron methods
 
 
 
@@ -249,6 +314,10 @@ public class LinearClassifier {
                 double testError = getLogisticRegressionError(w[t+1], testPts);
                 print("after " + (t+1) + " iterations, the training error is " 
                     + trError + " and the test error is " + testError);
+
+                if(t+1 == 50) {
+                    lrw50 = w[t+1];
+                }
             }
 
 

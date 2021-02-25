@@ -134,10 +134,12 @@ public class LinearClassifier {
         double[] w0 = new double[numFeatures]; // starter values of 0 for perceptron to build off
         for(int i = 0; i < numPasses; i++) {
             double[] wT = teachPerceptron(w0); // the final value/output
-            double error = getPerceptronTrainingError(wT);
-            print("after run " + i + " of teaching perceptron, we get the following training error: " + error);
-            error = getPerceptronError(wT, testPts);
-            print("after run " + i + " of teaching perceptron, we get the following test error: " + error);
+            double trError = getPerceptronTrainingError(wT);
+            double testError = getPerceptronError(wT, testPts);
+            if(i + 1 == 2 || i + 1 == 3 || i + 1 == 4 || i ==0) {
+                print("after " + (i + 1) + " runs of teaching perceptron, we get the following training error: " 
+                    + trError + " and the following test error: " + testError);
+            }
             //printDoubleArray(w0);
             w0 = wT; // the final value/output of each pass is the starter for the next pass
         }
@@ -214,38 +216,46 @@ public class LinearClassifier {
         w[0] = new double[numFeatures];
         //print("each w is size " + w[0].length);
         //print("there are " + w.length + " ws");
-        print("before gradient descent, w0 is " + norm(w[0]));
+        //print("before gradient descent, w0 is " + norm(w[0]));
         for(int t = 0; t < numIterations; t++) { // VITDO: CHECK IF THIS IS EVEN SUPPOSED TO RUN THIS MANY TIMES?
 
             double[] deltaLW = getDeltaLW(w[t]);
-            if(deltaLW.equals(new double[w[t].length])) {
-                print("getDeltaLW did a bad job");
-            }
+            //if(deltaLW.equals(new double[w[t].length])) {
+            //    print("getDeltaLW did a bad job");
+            //}
             double[] update = multiplyScalarAndVector(rate, deltaLW);
-            if(update.equals(new double[w[t].length])) {
-                print("getDeltaLW did a bad job");
-            } else {
-                print("norm of update is " + norm(update));
+            //if(update.equals(new double[w[t].length])) {
+            //    print("getDeltaLW did a bad job");
+            //} else {
+                //print("norm of update is " + norm(update));
                 //printDoubleArray(update);
-            }
+            //}
             w[t+1] = subtractVectors(w[t], update);
-            if(w[t+1].equals(new double[w[t].length])) {
-                print("subtractVectors did a bad job");
-            } else {
-                print("norm of w[" + (t+1) + "] is " + norm(w[t+1]));
+            //if(w[t+1].equals(new double[w[t].length])) {
+                //print("subtractVectors did a bad job");
+            //} else {
+                //print("norm of w[" + (t+1) + "] is " + norm(w[t+1]));
                 //printDoubleArray(w[t+1]);
-            }
+            //}
             if(norm(deltaLW) <= stopThreshold) {
-                print("we return early because norm(deltaLW) is " + norm(deltaLW));
+                //print("we return early because norm(deltaLW) is " + norm(deltaLW));
                 return w[t + 1];
             } 
-            print("norm(deltaLW) is " + norm(deltaLW));
+            //print("norm(deltaLW) is " + norm(deltaLW));
 
-            
+            // t + 1 is the number of iterations that have been completed
+            if(t+1 == 2 || t+1 == 10 || t+1 == 50 || t+1 == 100) { 
+                double trError = getLogisticRegressionTrainingError(w[t+1]);
+                double testError = getLogisticRegressionError(w[t+1], testPts);
+                print("after " + (t+1) + " iterations, the training error is " 
+                    + trError + " and the test error is " + testError);
+            }
+
+
         }
 
         //print("trPts.size() is " + trPts.size());
-        print("we do not return early");
+        //print("we do not return early");
         return w[numIterations]; // final form of w after running on last data point
     }
 
@@ -324,7 +334,7 @@ public class LinearClassifier {
     }
 
     private double getLogisticRegressionError(double[] classifier, ArrayList<DataPoint> testData) {
-        print("final classifier's norm is " + norm(classifier));
+        //print("final classifier's norm is " + norm(classifier));
         int timesCorrect = 0;
         int timesIncorrect = 0;
 

@@ -10,30 +10,23 @@ public class LinearClassifierRunner {
     public static void main(String[] args) {
         int dimNum = 819;
         int numPasses = 4;
-        int numIterations = 2;
+        int numIterations = 100;
         String trainFile = "pa3train.txt";
         String testFile = "pa3test.txt";
 
         LinearClassifier lc = new LinearClassifier(dimNum, trainFile, testFile);
 
+        lc.useClasses1And2(); // part 1 and part 2 use classes 1 and 2
+
         // part 1
 
-        lc.useClasses1And2();
-        //print("Part 1:");
-        //lc.runPerceptronPasses(numPasses);
-
+        print("Part 1:");
+        lc.runPerceptronPasses(numPasses);
 
         // part 2
 
-        print("Part 2:");
-        double[] wT = lc.runGradientDescent(numIterations);
-        //lc.runMethodTests();
-
-        double error = lc.getLogisticRegressionTrainingError(wT);
-        print("after " + numIterations + " runs of gradient descent, we get the following training error: " + error);
-
-        
-
+        print("\nPart 2:");
+        lc.runGradientDescent(numIterations);
 
 
         print("todo: finish LinearClassifierRunner main");

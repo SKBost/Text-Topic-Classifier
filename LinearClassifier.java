@@ -9,9 +9,27 @@ public class LinearClassifier {
 
     private final int numFeatures;
     private ArrayList<DataPoint> trPts; // training data points with feature vectors and labels
-    private ArrayList<DataPoint> allTrPts;
-    private ArrayList<DataPoint> binaryTrPts;
+    private ArrayList<DataPoint> allTrPts; // set of all points, 1 vs ... vs 6 (with labels of the real classes)
+    private ArrayList<DataPoint> oneVsTwoTrPts; // class 1 vs 2 (with labels -1 and 1)
+
+    private ArrayList<DataPoint> oneVsAllTrPts; // class 1 vs others
+    private ArrayList<DataPoint> twoVsAllTrPts; // class 2 vs others
+    private ArrayList<DataPoint> threeVsAllTrPts; // class 3 vs others
+    private ArrayList<DataPoint> fourVsAllTrPts; // etc...
+    private ArrayList<DataPoint> fiveVsAllTrPts;
+    private ArrayList<DataPoint> sixVsAllTrPts;
+
     private ArrayList<DataPoint> testPts;
+    private ArrayList<DataPoint> allTestPts;
+    private ArrayList<DataPoint> oneVsTwoTestPts;
+
+    private ArrayList<DataPoint> oneVsAllTestPts;
+    private ArrayList<DataPoint> twoVsAllTestPts; // class 2 vs others
+    private ArrayList<DataPoint> threeVsAllTestPts; // class 3 vs others
+    private ArrayList<DataPoint> fourVsAllTestPts; // etc...
+    private ArrayList<DataPoint> fiveVsAllTestPts;
+    private ArrayList<DataPoint> sixVsAllTestPts;
+
     private double[] pw3; // perceptron's weight vector after 3 iterations
     private double[] lrw50; // logistic regression's weight vector after 50 iterations of gradient descent 
 
@@ -20,12 +38,30 @@ public class LinearClassifier {
     public LinearClassifier(int newNumFeatures, String trainFile, String testFile) {
         numFeatures = newNumFeatures;
         allTrPts = readDataFrom(trainFile);
-        testPts = readDataFrom("pa3test.txt");
+        allTestPts = readDataFrom(testFile);
         trPts = allTrPts;
+        testPts = allTestPts;
 
-        ArrayList<DataPoint> binaryPts = new ArrayList<DataPoint>();
+        initTrPts();
+        initTestPts();
+
+        pw3 = null;
+        lrw50 = null;
+    }
+
+    private void initTrPts() {
+        ArrayList<DataPoint> oneVsTwoPts = new ArrayList<DataPoint>();
+        ArrayList<DataPoint> oneVsAllPts = new ArrayList<DataPoint>();
+        ArrayList<DataPoint> twoVsAllPts = new ArrayList<DataPoint>();
+        ArrayList<DataPoint> threeVsAllPts = new ArrayList<DataPoint>();
+        ArrayList<DataPoint> fourVsAllPts = new ArrayList<DataPoint>();
+        ArrayList<DataPoint> fiveVsAllPts = new ArrayList<DataPoint>();
+        ArrayList<DataPoint> sixVsAllPts = new ArrayList<DataPoint>();
+
         for(int i = 0; i < allTrPts.size(); i++) {
             DataPoint tp = allTrPts.get(i);
+
+            // constructing oneVsTwoTrPts
             if(tp.getLabel() == 1 || tp.getLabel() == 2) {
                 double newLabel;
                 if(tp.getLabel() == 1) {
@@ -33,20 +69,208 @@ public class LinearClassifier {
                 } else {
                     newLabel = 1;
                 }
-                DataPoint binaryPt = new DataPoint(tp.getFeatures(), newLabel);
-                binaryPts.add(binaryPt);
+                DataPoint oneVsTwoPt = new DataPoint(tp.getFeatures(), newLabel);
+                oneVsTwoPts.add(oneVsTwoPt);
             }
+
+            // constructing all other xVsAllTrPts (-1 means it is a member of the named type)
+            if(tp.getLabel() == 1) {
+                oneVsAllPts.add(new DataPoint(tp.getFeatures(), -1));
+                twoVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                threeVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fourVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fiveVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                sixVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+            } else if(tp.getLabel() == 2) {
+                oneVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                twoVsAllPts.add(new DataPoint(tp.getFeatures(), -1));
+                threeVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fourVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fiveVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                sixVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+            } else if(tp.getLabel() == 3) {
+                oneVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                twoVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                threeVsAllPts.add(new DataPoint(tp.getFeatures(), -1));
+                fourVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fiveVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                sixVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+            } else if(tp.getLabel() == 4) {
+                oneVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                twoVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                threeVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fourVsAllPts.add(new DataPoint(tp.getFeatures(), -1));
+                fiveVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                sixVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+            } else if(tp.getLabel() == 5) {
+                oneVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                twoVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                threeVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fourVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fiveVsAllPts.add(new DataPoint(tp.getFeatures(), -1));
+                sixVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+            } else if(tp.getLabel() == 6) {
+                oneVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                twoVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                threeVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fourVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fiveVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                sixVsAllPts.add(new DataPoint(tp.getFeatures(), -1));
+            } else {
+                print("error: label was not a number 1-6");
+            }
+
         }
-        binaryTrPts = binaryPts;
-        pw3 = null;
+
+        oneVsTwoTrPts = oneVsTwoPts;
+        oneVsAllTrPts = oneVsAllPts;
+        twoVsAllTrPts = twoVsAllPts;
+        threeVsAllTrPts = threeVsAllPts;
+        fourVsAllTrPts = fourVsAllPts;
+        fiveVsAllTrPts = fiveVsAllPts;
+        sixVsAllTrPts = sixVsAllPts;
+    }
+
+    private void initTestPts() {
+        ArrayList<DataPoint> oneVsTwoPts = new ArrayList<DataPoint>();
+        ArrayList<DataPoint> oneVsAllPts = new ArrayList<DataPoint>();
+        ArrayList<DataPoint> twoVsAllPts = new ArrayList<DataPoint>();
+        ArrayList<DataPoint> threeVsAllPts = new ArrayList<DataPoint>();
+        ArrayList<DataPoint> fourVsAllPts = new ArrayList<DataPoint>();
+        ArrayList<DataPoint> fiveVsAllPts = new ArrayList<DataPoint>();
+        ArrayList<DataPoint> sixVsAllPts = new ArrayList<DataPoint>();
+
+        for(int i = 0; i < allTestPts.size(); i++) {
+            DataPoint tp = allTestPts.get(i);
+
+            // constructing oneVsTwoTrPts
+            if(tp.getLabel() == 1 || tp.getLabel() == 2) {
+                double newLabel;
+                if(tp.getLabel() == 1) {
+                    newLabel = -1;
+                } else {
+                    newLabel = 1;
+                }
+                DataPoint oneVsTwoPt = new DataPoint(tp.getFeatures(), newLabel);
+                oneVsTwoPts.add(oneVsTwoPt);
+            }
+
+            // constructing all other xVsAllTrPts (-1 means it is a member of the named type)
+            if(tp.getLabel() == 1) {
+                oneVsAllPts.add(new DataPoint(tp.getFeatures(), -1));
+                twoVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                threeVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fourVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fiveVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                sixVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+            } else if(tp.getLabel() == 2) {
+                oneVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                twoVsAllPts.add(new DataPoint(tp.getFeatures(), -1));
+                threeVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fourVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fiveVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                sixVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+            } else if(tp.getLabel() == 3) {
+                oneVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                twoVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                threeVsAllPts.add(new DataPoint(tp.getFeatures(), -1));
+                fourVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fiveVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                sixVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+            } else if(tp.getLabel() == 4) {
+                oneVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                twoVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                threeVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fourVsAllPts.add(new DataPoint(tp.getFeatures(), -1));
+                fiveVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                sixVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+            } else if(tp.getLabel() == 5) {
+                oneVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                twoVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                threeVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fourVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fiveVsAllPts.add(new DataPoint(tp.getFeatures(), -1));
+                sixVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+            } else if(tp.getLabel() == 6) {
+                oneVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                twoVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                threeVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fourVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                fiveVsAllPts.add(new DataPoint(tp.getFeatures(), 1));
+                sixVsAllPts.add(new DataPoint(tp.getFeatures(), -1));
+            } else {
+                print("error: label was not a number 1-6");
+            }
+
+        }
+
+        oneVsTwoTestPts = oneVsTwoPts;
+        oneVsAllTestPts = oneVsAllPts;
+        twoVsAllTestPts = twoVsAllPts;
+        threeVsAllTestPts = threeVsAllPts;
+        fourVsAllTestPts = fourVsAllPts;
+        fiveVsAllTestPts = fiveVsAllPts;
+        sixVsAllTestPts = sixVsAllPts;
     }
 
     public void useClasses1And2() {
-        trPts = binaryTrPts;
+        trPts = oneVsTwoTrPts;
+        testPts = oneVsTwoTestPts;
     }
 
     public void useAllClasses() {
         trPts = allTrPts;
+        testPts = allTestPts;
+    }
+
+    public void useNumVsAll(int num) {
+        if(num == 1) {
+            trPts = oneVsAllTrPts;
+            testPts = oneVsAllTestPts;
+        } else if(num == 2) {
+            trPts = twoVsAllTrPts;
+            testPts = twoVsAllTestPts;
+        } else if(num == 3) {
+            trPts = threeVsAllTrPts;
+            testPts = threeVsAllTestPts;
+        } else if(num == 4) {
+            trPts = fourVsAllTrPts;
+            testPts = fourVsAllTestPts;
+        } else if(num == 5) {
+            trPts = fiveVsAllTrPts;
+            testPts = fiveVsAllTestPts;
+        } else if(num == 6) {
+            trPts = sixVsAllTrPts;
+            testPts = sixVsAllTestPts;
+        } else {
+            print("error: invalid input for useNumVsAll; choose a num between 1 and 6");
+        }
+    }
+
+    public int[][] getConfusionMatrix(double[] classifier) {
+        int[][] confusionMatrix = new int[7][6]; 
+        /*
+        a confusion matrix is a 6×6 matrix, where each row is labelled 1, . . . , 6
+        and each column is labelled 1, . . . , 6. The entry of the matrix at row i and column j is Cij/Nj where
+        Cij is the number of test examples that have label j but are classified as label i by the classifier, and
+        Nj is the number of test examples that have label j. Since the one-vs-all classifier can also predict
+        Don’t Know, the confusion matrix will now be an 7 × 6 matrix – that is, it will have an extra row
+        corresponding to the Don’t Know predictions.
+        */
+        useNumVsAll(1);
+        
+
+        for(int i = 0; i < 6; i++) {
+            DataPoint tp = testPts.get(i);
+            double label = tp.getLabel();
+            getPerceptronClassification(classifier, tp);
+
+            //for(int j = 0; j < 6; j++) {
+            
+            //}
+        }
+
+        return confusionMatrix;
     }
 
     // tested
@@ -189,10 +413,31 @@ public class LinearClassifier {
     // w is the classifier (todo: change name)
     // perceptron gives correct classification
     private boolean perceptronGivesCorrectClassification(double[] w, DataPoint testDP) {
+        /*
         double yt = testDP.getLabel();
         double[] xt  = testDP.getFeatures();
         double classVal = yt * getDotProduct(w, xt); // classification value
-        return !(classVal <= 0);
+        return classVal > 0;
+        */
+
+        
+        double label = testDP.getLabel();
+        int classification = getPerceptronClassification(w, testDP);
+        //print("label is " + label + " and classification is " + classification + "; do they match? " + (label == ((double) classification)));
+        return label == ((double) classification);
+        
+    }
+
+    private int getPerceptronClassification(double[] w, DataPoint testDP) {
+        double yt = testDP.getLabel();
+        double[] xt  = testDP.getFeatures();
+        double dotProd = getDotProduct(w, xt); // classification value
+        if(dotProd > 0) {
+            return 1;
+        } else {
+            return -1;
+        }
+        //return !(classVal <= 0);
     }
 
     public double getPerceptronTrainingError(double[] classifier) {

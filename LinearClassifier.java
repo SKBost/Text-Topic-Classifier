@@ -247,7 +247,7 @@ public class LinearClassifier {
         }
     }
 
-    public int[][] getConfusionMatrix(double[] classifier) {
+    public int[][] getConfusionMatrix(/*double[] classifier, Array<DataPoints> testData*/) {
         int[][] confusionMatrix = new int[7][6]; 
         /*
         a confusion matrix is a 6×6 matrix, where each row is labelled 1, . . . , 6
@@ -257,19 +257,101 @@ public class LinearClassifier {
         Don’t Know, the confusion matrix will now be an 7 × 6 matrix – that is, it will have an extra row
         corresponding to the Don’t Know predictions.
         */
-        useNumVsAll(1);
         
+        ArrayList<Map<DataPoint, Double>> mapList = new ArrayList<Map<DataPoint, Double>>();
+
+        // get classifiers for each class for oneVsAll
+        double[][] classifiers = new double[6][numFeatures];
+        for(int i = 1; i <= 6; i++) {
+            useNumVsAll(i);
+            classifiers[i-1] = teachPerceptron(new double[numFeatures]);
+        }
 
         for(int i = 0; i < 6; i++) {
+            mapList.add(new HashMap<DataPoint, Double>());
+        }
+        //= new HashMap<String, Integer>(); 
+
+        // for each possible class
+        for(int classNum = 1; classNum <= 6; classNum++) {
+            useNumVsAll(classNum);
+            Map<DataPoint, Double> map = mapList.get(classNum-1);
+            // for each point classified under that way
+            for(int i = 0; i < testPts.size(); i++) {
+                DataPoint tp = testPts.get(i);
+                double prediction = getPerceptronClassification(classifiers[classNum-1], tp);
+                // add to map of point to label what prediction there is
+                map.put(testPts.get(i), prediction);
+            }
+        }
+
+        useAllClasses();
+
+        // for each point
+        for(int i = 0; i < testPts.size(); i++) {
+            DataPoint tp = testPts.get(i);
+            // have a count of how many predicted -1
+            int count = 0;
+            // have a variable representing one class that predicted -1
+            int matchClass = 7; // default value for if there are no matches
+            // for each class
+            for(int classNum = 1; classNum <= 6; classNum++) {
+                // get its predicted label from the map
+                Map<DataPoint, Double> map = mapList.get(classNum - 1);
+                if(map.get(tp) != null) {
+                    print("map.get(tp) is NOT null");
+                    double prediction = map.get(tp);
+                    // if it is -1, increment the count
+                    if(prediction == -1.0) {
+                        count++;
+                        // if the count is > 1, return a don't know TODO make sure classnum carries through
+                        if(count > 1) {
+                            matchClass = 7;
+                            break;
+                        } else {
+                            // otherwise, set the class number and continue
+                            matchClass = classNum;
+                        }
+                    }
+                } else {
+                    print("ERROR: map.get(tp) is null; need to check that tp is used correctly");
+                }
+            }
+
+            print("for i = " + i + ", matchClass is " + matchClass + "; actual label is " + tp.getLabel());
+
+            confusionMatrix[matchClass-1][(int)(tp.getLabel())-1]++;
+
+        }
+        
+/*
+        for(int i = 0; i < testPts.size(); i++) {
             DataPoint tp = testPts.get(i);
             double label = tp.getLabel();
             getPerceptronClassification(classifier, tp);
 
-            //for(int j = 0; j < 6; j++) {
-            
+            // this array will hold whether or not the class = index + 1 was predicted as the label
+            boolean[] predictedSingleClass = new boolean[6];
+            for(int j = 1; j <= 6; j++) {
+                useNumVsAll(j);
+                double prediction = getPerceptronClassification(classifier, tp);
+                if(prediction == -1.0) {
+                    predictedSingleClass[j-1] = true; // j indices are one above their usual
+                }
+            }
+
+            for(int j = 0; j < predictedSingleClass.length; j++) {
+
+            }
+            //if(prediction != label) {
+            //    confusionMatrix[i][j]++;
             //}
         }
+        */
 
+        for(int i = 0; i < confusionMatrix.length; i++) {
+            print(Arrays.toString(confusionMatrix[i]));
+        }
         return confusionMatrix;
     }
 
@@ -410,7 +492,7 @@ public class LinearClassifier {
 
     
 
-    // w is the classifier (todo: change name)
+    // w is the classifier (todo: change name) VITODO determine which form is correct!
     // perceptron gives correct classification
     private boolean perceptronGivesCorrectClassification(double[] w, DataPoint testDP) {
         /*

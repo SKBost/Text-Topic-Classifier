@@ -40,7 +40,11 @@ public class LinearClassifierRunner {
         lc.getExtremeCoords(lc.getLRW50(), numIdxs);
 
 
-        print("todo: finish LinearClassifierRunner main");
+        // part 5 
+
+        print("\nPart 5:");
+        lc.getConfusionMatrix();
+        //print("todo: finish LinearClassifierRunner main");
 
     }
 

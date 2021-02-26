@@ -247,8 +247,8 @@ public class LinearClassifier {
         }
     }
 
-    public int[][] getConfusionMatrix(/*double[] classifier, Array<DataPoints> testData*/) {
-        int[][] confusionMatrix = new int[7][6]; 
+    public double[][] getConfusionMatrix(/*double[] classifier, Array<DataPoints> testData*/) {
+        double[][] confusionMatrix = new double[7][6]; 
         /*
         a confusion matrix is a 6×6 matrix, where each row is labelled 1, . . . , 6
         and each column is labelled 1, . . . , 6. The entry of the matrix at row i and column j is Cij/Nj where
@@ -356,10 +356,27 @@ public class LinearClassifier {
             //}
         }
         */
+        //printDoubleArrayArray(confusionMatrix);
+        // make confusion matrix proportional
+        for(int col = 0; col < confusionMatrix[0].length; col++) {
+            int colSum = 0; // total points with the true label associated with the column
+            for(int row = 0; row < confusionMatrix.length; row++) {
 
-        for(int i = 0; i < confusionMatrix.length; i++) {
-            print(Arrays.toString(confusionMatrix[i]));
+                colSum += confusionMatrix[row][col];
+
+            }
+            //print("colSum for col " + (col+1) + " is " + colSum);
+            for(int row = 0; row < confusionMatrix.length; row++) {
+
+                confusionMatrix[row][col] = confusionMatrix[row][col] / colSum;
+
+            }
+
         }
+
+        
+        printDoubleArrayArray(confusionMatrix);
+        
         return confusionMatrix;
     }
 
@@ -504,26 +521,26 @@ public class LinearClassifier {
     // perceptron gives correct classification
     private boolean perceptronGivesCorrectClassification(double[] w, DataPoint testDP) {
         
-        double yt = testDP.getLabel();
-        double[] xt  = testDP.getFeatures();
-        double classVal = yt * getDotProduct(w, xt); // classification value
-        return classVal > 0;
+        //double yt = testDP.getLabel();
+        //double[] xt  = testDP.getFeatures();
+        //double classVal = getDotProduct(w, xt); // classification value
+        //return classVal > 0;
         
 
-        /*
+        
         double label = testDP.getLabel();
         int classification = getPerceptronClassification(w, testDP);
         //print("label is " + label + " and classification is " + classification + "; do they match? " + (label == ((double) classification)));
         return label == ((double) classification);
-        */
+        
         
     }
 
     private int getPerceptronClassification(double[] w, DataPoint testDP) {
-        double yt = testDP.getLabel();
+        //double yt = testDP.getLabel();
         double[] xt  = testDP.getFeatures();
         double dotProd = getDotProduct(w, xt); // classification value
-        if(dotProd > 0) {
+        if(dotProd >= 0) {
             return 1;
         } else {
             return -1;
@@ -728,6 +745,8 @@ public class LinearClassifier {
         //print("classVal is " + classVal);
 
         if(classVal == 0.5) { //TODO: find a better way of handling this
+            //Random rd = new Random();
+            //return rd.nextBoolean();
             return yt == 1;
         } else {
             return classVal > 0.5;
@@ -802,9 +821,19 @@ public class LinearClassifier {
     public static void printDoubleArray(double[] array) {
         System.out.print("[");
             for(int j = 0; j < array.length; j++) {
-                System.out.print(array[j] + ", ");
+                if(j == array.length - 1) {
+                    System.out.printf("%.5f", array[j]);
+                } else {
+                    System.out.printf("%.5f,\t", array[j]);
+                }
             }
             System.out.println("]");
+    }
+
+    public static void printDoubleArrayArray(double[][] array) {
+        for(int i = 0; i < array.length; i++) {
+            printDoubleArray(array[i]);
+        }
     }
 
     public ArrayList<DataPoint> readDataFrom(String fileName) {

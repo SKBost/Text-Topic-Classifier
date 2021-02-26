@@ -31,14 +31,17 @@ public class LinearClassifier {
     private ArrayList<DataPoint> sixVsAllTestPts;
 
     private double[] pw3; // perceptron's weight vector after 3 iterations
-    private double[] lrw50; // logistic regression's weight vector after 50 iterations of gradient descent 
+    private double[] lrw50; // logistic regression's weight vector after 50 iterations of gradient descent
+
+    private ArrayList<String> dictionary;
 
     private static double placeholder = 420.69;
 
-    public LinearClassifier(int newNumFeatures, String trainFile, String testFile) {
+    public LinearClassifier(int newNumFeatures, String trainFile, String testFile, String dictionaryFile) {
         numFeatures = newNumFeatures;
         allTrPts = readDataFrom(trainFile);
         allTestPts = readDataFrom(testFile);
+        dictionary = readWordsFrom(dictionaryFile);
         trPts = allTrPts;
         testPts = allTestPts;
 
@@ -47,6 +50,26 @@ public class LinearClassifier {
 
         pw3 = null;
         lrw50 = null;
+    }
+
+    private ArrayList<String> readWordsFrom(String fileName) {
+        ArrayList<String> words = new ArrayList<String>();
+
+        try {
+            File file = new File(fileName); 
+            Scanner sc = new Scanner(file); 
+    
+            while (sc.hasNextLine()) { // make each line into a data point
+                String word = sc.nextLine();
+                words.add(word);
+
+            }
+
+        } catch (FileNotFoundException ex) {
+            print("Invalid file path given: " + fileName);
+        }
+
+        return words;
     }
 
     private void initTrPts() {
@@ -374,8 +397,59 @@ public class LinearClassifier {
 
         }
 
-        
+        print("confusion matrix:");
         printDoubleArrayArray(confusionMatrix);
+
+        int accClass = -1; // default value
+        double maxVal = -1;
+
+        int inaccClass = -1;
+        double minVal = 1; // proportions can't exceed 1 so this is our default value
+
+        for(int classIdx = 0; classIdx < confusionMatrix.length - 1; classIdx++) {
+            //print("classIdx = " + classIdx);
+                if(confusionMatrix[classIdx][classIdx] > maxVal) { // updating most accurate class
+                    accClass = classIdx + 1; // because class 1 is at index 0, etc
+                    maxVal = confusionMatrix[classIdx][classIdx];
+                    //print("accClass updated to " + accClass + " and maxVal updated to " + maxVal);
+                }
+
+                if(confusionMatrix[classIdx][classIdx] < minVal) { // updating least accurate class
+                    inaccClass = classIdx + 1; // because class 1 is at index 0, etc
+                    minVal = confusionMatrix[classIdx][classIdx];
+                    //print("inaccClass updated to " + inaccClass + " and minVal updated to " + minVal);
+                }
+        }
+
+        print("The perceptron classifier has the highest accuracy for examples that belong to class " + accClass);
+
+        //int inaccClass = -1; // default value
+
+
+        print("The perceptron classifier has the least accuracy for examples that belong to class " + inaccClass);
+        
+        int corClass = -1;
+        int incorClass = -1;
+        maxVal = -1;
+        for(int rowNum = 0; rowNum < confusionMatrix.length - 1; rowNum++) { // avoiding the don't know row
+            for(int colNum = 0; colNum < confusionMatrix[rowNum].length; colNum++) { 
+                //print("rowNum = " + rowNum + "; colNum = " + colNum);
+                if(rowNum == colNum) { // only comparing incorrect labels
+                    //print("skipped");
+                    continue;
+                }
+
+                if(confusionMatrix[rowNum][colNum] > maxVal) {
+                    incorClass = rowNum + 1; // adjusting to 1-indexing
+                    corClass = colNum + 1;
+                    maxVal = confusionMatrix[rowNum][colNum];
+                    //print("updated to " + maxVal);
+                }
+
+            }
+        }
+        print("The perceptron classifier most often mistakenly classifies an example in class " + 
+            corClass + " as belonging to class " + incorClass);
         
         return confusionMatrix;
     }
@@ -585,12 +659,12 @@ public class LinearClassifier {
 
         print("now printing lowPairs");
         for(int i = 0; i < lowPairs.length; i++) {
-            print("lowPairs[" + i + "] = (" + lowPairs[i].getIdx() + ", " + lowPairs[i].getVal() + ")");
+            print("lowPairs[" + i + "] = (" + lowPairs[i].getIdx() + ", " + lowPairs[i].getVal() + "); the associated word is " + dictionary.get(lowPairs[i].getIdx()));
         }
 
         print("now printing highPairs");
         for(int i = 0; i < highPairs.length; i++) {
-            print("highPairs[" + i + "] = (" + highPairs[i].getIdx() + ", " + highPairs[i].getVal() + ")");
+            print("highPairs[" + i + "] = (" + highPairs[i].getIdx() + ", " + highPairs[i].getVal() + "); the associated word is " + dictionary.get(highPairs[i].getIdx()));
         }
 
         Pair<IdxValPair[], IdxValPair[]> lowNHigh = new Pair<IdxValPair[], IdxValPair[]>(lowPairs, highPairs);

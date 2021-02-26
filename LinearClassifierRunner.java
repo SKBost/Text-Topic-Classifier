@@ -14,8 +14,9 @@ public class LinearClassifierRunner {
         int numIdxs = 3;
         String trainFile = "pa3train.txt";
         String testFile = "pa3test.txt";
+        String dictionaryFile = "pa3dictionary.txt";
 
-        LinearClassifier lc = new LinearClassifier(dimNum, trainFile, testFile);
+        LinearClassifier lc = new LinearClassifier(dimNum, trainFile, testFile, dictionaryFile);
 
         lc.useClasses1And2(); // part 1 and part 2 use classes 1 and 2
 

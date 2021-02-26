@@ -281,7 +281,7 @@ public class LinearClassifier {
                 DataPoint tp = testPts.get(i);
                 double prediction = getPerceptronClassification(classifiers[classNum-1], tp);
                 // add to map of point to label what prediction there is
-                map.put(testPts.get(i), prediction);
+                map.put(allTestPts.get(i), prediction);//todo: see if this works to get the right label if I put allTestPts?
             }
         }
 
@@ -298,8 +298,15 @@ public class LinearClassifier {
             for(int classNum = 1; classNum <= 6; classNum++) {
                 // get its predicted label from the map
                 Map<DataPoint, Double> map = mapList.get(classNum - 1);
+                //print("map.size() is " + map.size());
+
+                //for (Map.Entry<DataPoint, Double> me : map.entrySet()) { 
+                //    System.out.print(me.getKey().getLabel() + ":"); 
+                //    System.out.println(me.getValue()); 
+                //} 
+
                 if(map.get(tp) != null) {
-                    print("map.get(tp) is NOT null");
+                    //print("map.get(tp) is NOT null");
                     double prediction = map.get(tp);
                     // if it is -1, increment the count
                     if(prediction == -1.0) {
@@ -318,7 +325,8 @@ public class LinearClassifier {
                 }
             }
 
-            print("for i = " + i + ", matchClass is " + matchClass + "; actual label is " + tp.getLabel());
+
+            //print("for i = " + i + ", matchClass is " + matchClass + "; actual label is " + tp.getLabel());
 
             confusionMatrix[matchClass-1][(int)(tp.getLabel())-1]++;
 
@@ -495,18 +503,19 @@ public class LinearClassifier {
     // w is the classifier (todo: change name) VITODO determine which form is correct!
     // perceptron gives correct classification
     private boolean perceptronGivesCorrectClassification(double[] w, DataPoint testDP) {
-        /*
+        
         double yt = testDP.getLabel();
         double[] xt  = testDP.getFeatures();
         double classVal = yt * getDotProduct(w, xt); // classification value
         return classVal > 0;
-        */
-
         
+
+        /*
         double label = testDP.getLabel();
         int classification = getPerceptronClassification(w, testDP);
         //print("label is " + label + " and classification is " + classification + "; do they match? " + (label == ((double) classification)));
         return label == ((double) classification);
+        */
         
     }
 
